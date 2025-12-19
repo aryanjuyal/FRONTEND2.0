@@ -78,7 +78,6 @@ const LandingPage = () => {
             <div className="relative scale-125 md:scale-150">
               <GlitchText text="BLOCKVERSE" size="large" />
               <div className="absolute -inset-8 border-t border-b border-neon-cyan/20 animate-pulse-fast pointer-events-none" />
-              <div className="absolute left-0 right-0 top-1/2 -translate-y-1/2 h-[2px] bg-neon-cyan/20" />
             </div>
           </Motion.div>
         </Motion.div>

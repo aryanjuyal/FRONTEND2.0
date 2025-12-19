@@ -68,8 +68,8 @@ const Round1 = () => {
   return (
     <div className="flex-1 pt-12 md:pt-16 px-6 md:px-12 flex flex-col md:flex-row gap-8">
       
-      <div className="flex-1">
-        <div className="grid grid-cols-5 md:grid-cols-10 gap-3 md:gap-4">
+      <div className="flex-1 max-h-[92vh] overflow-auto pr-2 mb-6">
+        <div className="grid grid-cols-5 grid-rows-10 gap-3 md:gap-4">
           {nodes.map((node) => (
             <Motion.button
               key={node.id}

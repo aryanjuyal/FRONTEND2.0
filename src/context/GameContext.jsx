@@ -7,8 +7,8 @@ export const useGame = () => useContext(GameContext);
 export const GameProvider = ({ children }) => {
   const [gameState, setGameState] = useState({
     teamId: null,
-    points: 1250,
-    tokens: 5,
+    points: 0,
+    tokens: 0,
     fragments: [],
     securityLevel: 'HIGH',
   });
