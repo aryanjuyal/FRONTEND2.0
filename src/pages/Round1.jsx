@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+ 
 import { Lock, Unlock, AlertTriangle, Clock } from 'lucide-react';
 import { motion as Motion } from 'framer-motion';
 import TerminalCard from '../components/TerminalCard';
@@ -27,7 +27,7 @@ const INTRO_MESSAGES = [
 ];
 
 const Round1 = () => {
-  const navigate = useNavigate();
+  
   const { unlockFragment, setAnaDialogue, setAnaVisible } = useGame();
   const [nodes, setNodes] = useState(NODES);
   const [selectedNode, setSelectedNode] = useState(null);
@@ -57,6 +57,9 @@ const Round1 = () => {
   const dashOffset = C * (1 - timeLeft / TOTAL_TIME);
   const isDanger = timeLeft <= 600;
   const isCritical = timeLeft <= 60;
+  const totalTimeLabel = `${String(Math.floor(TOTAL_TIME / 60)).padStart(2, '0')}:${String(TOTAL_TIME % 60).padStart(2, '0')}`;
+  const totalNodes = NODES.length;
+  const unlockedCount = nodes.filter(n => n.status === 'unlocked').length;
 
   const handleNodeClick = (node) => {
     if (node.status === 'locked') {
@@ -66,7 +69,9 @@ const Round1 = () => {
   };
 
   const handleDecrypt = () => {
-    if (puzzleInput.toUpperCase() === PUZZLE.answer) {
+    const input = puzzleInput.trim().toLowerCase();
+    const target = PUZZLE.answer.toLowerCase();
+    if (input === target) {
       const newNodes = [...nodes];
       newNodes[selectedNode.id].status = 'unlocked';
       setNodes(newNodes);
@@ -108,33 +113,42 @@ const Round1 = () => {
           animate={{ opacity: 1, y: 0 }}
           className="sticky top-0 z-30 pointer-events-none w-fit ml-auto"
         >
-          <Motion.div
-            animate={{ scale: [1, 1.03, 1] }}
-            transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
-            className="px-3 py-2 rounded border border-neon-cyan/40 bg-bg-black/60 backdrop-blur-sm shadow-none flex items-center gap-2 opacity-90"
-          >
-            <div className="relative w-6 h-6 flex items-center justify-center">
-              <svg viewBox="0 0 24 24" className="absolute inset-0">
-                <circle cx="12" cy="12" r={r} stroke="rgba(255,255,255,0.15)" strokeWidth="3" fill="none" />
-                <circle
-                  cx="12"
-                  cy="12"
-                  r={r}
-                  stroke={isDanger ? '#ff3b3b' : '#00f6ff'}
-                  strokeWidth="3"
-                  fill="none"
-                  strokeDasharray={C}
-                  strokeDashoffset={dashOffset}
-                  strokeOpacity={isDanger ? 0.8 : 0.6}
-                  transform="rotate(-90 12 12)"
-                />
-              </svg>
-              <Clock size={12} className="text-neon-cyan opacity-60" />
-            </div>
-            <div className={`text-base md:text-lg font-mono ${isDanger ? 'text-red-500' : 'text-neon-gold'} ${isCritical ? 'animate-pulse' : ''}`}>
-              {String(Math.floor(timeLeft / 60)).padStart(2, '0')}:{String(timeLeft % 60).padStart(2, '0')}
-            </div>
-          </Motion.div>
+          <div className="flex items-center gap-2">
+            <Motion.div
+              animate={{ scale: [1, 1.03, 1] }}
+              transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
+              className="px-3 py-2 rounded border border-neon-cyan/40 bg-bg-black/60 backdrop-blur-sm shadow-none flex items-center gap-2 opacity-90"
+            >
+              <div className="relative w-6 h-6 flex items-center justify-center">
+                <svg viewBox="0 0 24 24" className="absolute inset-0">
+                  <circle cx="12" cy="12" r={r} stroke="rgba(255,255,255,0.15)" strokeWidth="3" fill="none" />
+                  <circle
+                    cx="12"
+                    cy="12"
+                    r={r}
+                    stroke={isDanger ? '#ff3b3b' : '#00f6ff'}
+                    strokeWidth="3"
+                    fill="none"
+                    strokeDasharray={C}
+                    strokeDashoffset={dashOffset}
+                    strokeOpacity={isDanger ? 0.8 : 0.6}
+                    transform="rotate(-90 12 12)"
+                  />
+                </svg>
+                <Clock size={12} className="text-neon-cyan opacity-60" />
+              </div>
+              <div className={`text-base md:text-lg font-mono ${isDanger ? 'text-red-500' : 'text-neon-cyan'} ${isCritical ? 'animate-pulse' : ''}`}>
+                {String(Math.floor(timeLeft / 60)).padStart(2, '0')}:{String(timeLeft % 60).padStart(2, '0')}
+              </div>
+            </Motion.div>
+            <Motion.div
+              initial={{ opacity: 0, x: 10 }}
+              animate={{ opacity: 1, x: 0 }}
+              className="px-3 py-2 rounded border border-neon-cyan/40 bg-bg-black/60 backdrop-blur-sm shadow-none font-mono text-neon-green text-sm md:text-base"
+            >
+              UNLOCKED {unlockedCount}/{totalNodes}
+            </Motion.div>
+          </div>
         </Motion.div>
         <TerminalCard title="MISSION LOG" headerColor="red">
           <div className="space-y-4 text-sm font-mono text-gray-300">
@@ -148,11 +162,7 @@ const Round1 = () => {
               <li>Solve decryption cipher</li>
               <li>Inject payload</li>
             </ul>
-            <div className="mt-8">
-                <NeonButton variant="secondary" onClick={() => navigate('/dashboard')} className="w-full text-xs">
-                    &lt;&lt; RETURN TO DASHBOARD
-                </NeonButton>
-            </div>
+            
           </div>
         </TerminalCard>
       </div>
@@ -200,6 +210,10 @@ const Round1 = () => {
         <div className="space-y-6">
           <div className="p-4 border border-neon-cyan/30 bg-black/50 font-mono text-neon-cyan">
             {INTRO_MESSAGES[introStep]}
+          </div>
+          <div className="flex justify-between items-center font-mono text-neon-cyan text-xs md:text-sm px-1">
+            <span>TIME {totalTimeLabel}</span>
+            <span>NODES {totalNodes}</span>
           </div>
           <div className="flex justify-end gap-3">
             {introStep < INTRO_MESSAGES.length - 1 ? (
