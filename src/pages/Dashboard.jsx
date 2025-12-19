@@ -6,6 +6,7 @@ import NeonButton from '../components/NeonButton';
 import GlitchText from '../components/GlitchText';
 import { useGame } from '../context/GameContext';
 import { motion as Motion, animate, useMotionValue } from 'framer-motion';
+import MeteorShower from '../components/MeteorShower';
 
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -52,6 +53,7 @@ const Dashboard = () => {
       animate="visible"
       className="flex-1 p-6 md:p-12 space-y-8"
     >
+      <MeteorShower />
       <Motion.div variants={itemVariants} className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
           <h2 className="text-gray-400 font-mono text-sm">CURRENT SESSION</h2>
