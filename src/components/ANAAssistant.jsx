@@ -3,8 +3,7 @@ import { motion as Motion, AnimatePresence } from 'framer-motion';
 import { useGame } from '../context/GameContext';
 
 const ANAAssistant = () => {
-  const { anaDialogue } = useGame();
-  const [isVisible] = useState(true);
+  const { anaDialogue, anaVisible, setAnaVisible } = useGame();
   const [localDialogue, setLocalDialogue] = useState("");
 
   useEffect(() => {
@@ -20,7 +19,7 @@ const ANAAssistant = () => {
   
   return (
     <AnimatePresence>
-      {isVisible && (
+      {anaVisible && (
         <Motion.div 
           initial={{ y: 100, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
@@ -47,6 +46,8 @@ const ANAAssistant = () => {
             <div className="flex justify-end items-center gap-3">
               <Motion.button
                 whileHover={{ scale: 1.1 }}
+                onClick={() => setAnaVisible(!anaVisible)}
+                aria-expanded={anaVisible}
                 className="w-12 h-12 rounded-full border-2 border-neon-cyan bg-bg-black flex items-center justify-center shadow-neon overflow-hidden"
               >
                 <div className="w-full h-full bg-neon-cyan/20 animate-pulse-fast flex items-center justify-center">
@@ -56,6 +57,20 @@ const ANAAssistant = () => {
             </div>
           </div>
         </Motion.div>
+      )}
+      {!anaVisible && (
+        <div className="fixed bottom-8 right-8 z-40">
+          <Motion.button
+            whileHover={{ scale: 1.1 }}
+            onClick={() => setAnaVisible(true)}
+            aria-expanded={anaVisible}
+            className="w-12 h-12 rounded-full border-2 border-neon-cyan bg-bg-black flex items-center justify-center shadow-neon overflow-hidden"
+          >
+            <div className="w-full h-full bg-neon-cyan/20 animate-pulse-fast flex items-center justify-center">
+              <span className="font-orbitron font-bold text-xs text-neon-cyan">ANA</span>
+            </div>
+          </Motion.button>
+        </div>
       )}
     </AnimatePresence>
   );

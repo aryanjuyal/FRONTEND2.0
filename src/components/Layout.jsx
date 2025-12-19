@@ -4,7 +4,7 @@ import ANAAssistant from './ANAAssistant';
 
 const Layout = () => {
   const location = useLocation();
-  const showANA = location.pathname !== '/login' && location.pathname !== '/';
+  const showANA = location.pathname !== '/login' && location.pathname !== '/' && location.pathname !== '/round1';
   const isLogin = location.pathname === '/login';
 
   return (

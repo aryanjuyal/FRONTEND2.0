@@ -14,6 +14,7 @@ export const GameProvider = ({ children }) => {
   });
 
   const [anaDialogue, setAnaDialogue] = useState("System initialized. Waiting for input...");
+  const [anaVisible, setAnaVisible] = useState(true);
 
   const login = (teamId) => {
     setGameState(prev => ({ ...prev, teamId }));
@@ -43,7 +44,9 @@ export const GameProvider = ({ children }) => {
       addPoints, 
       unlockFragment,
       anaDialogue,
-      setAnaDialogue 
+      setAnaDialogue,
+      anaVisible,
+      setAnaVisible
     }}>
       {children}
     </GameContext.Provider>

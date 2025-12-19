@@ -3,7 +3,7 @@ import { motion as Motion, AnimatePresence } from 'framer-motion';
 import TerminalCard from './TerminalCard';
 import NeonButton from './NeonButton';
 
-const Modal = ({ isOpen, onClose, title, children }) => {
+const Modal = ({ isOpen, onClose, title, children, showClose = true }) => {
   if (!isOpen) return null;
 
   return (
@@ -26,11 +26,13 @@ const Modal = ({ isOpen, onClose, title, children }) => {
           >
             <TerminalCard title={title} headerColor="gold" className="border-neon-gold shadow-neon-gold">
               {children}
-              <div className="mt-6 flex justify-end">
-                <NeonButton variant="secondary" onClick={onClose} className="text-sm py-2">
-                  Close
-                </NeonButton>
-              </div>
+              {showClose && (
+                <div className="mt-6 flex justify-end">
+                  <NeonButton variant="secondary" onClick={onClose} className="text-sm py-2">
+                    Close
+                  </NeonButton>
+                </div>
+              )}
             </TerminalCard>
           </Motion.div>
         </div>

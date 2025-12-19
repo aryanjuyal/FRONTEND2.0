@@ -18,25 +18,38 @@ const PUZZLE = {
   answer: "0x4D"
 };
 
+const INTRO_MESSAGES = [
+  "Connection secured. Welcome to Round 1.",
+  "Objective: Breach the Firewall Grid.",
+  "Select encrypted nodes and solve the decryption cipher.",
+  "Recover fragments to progress mission integrity.",
+  "Prepare to initiate. Tap START to begin."
+];
+
 const Round1 = () => {
   const navigate = useNavigate();
-  const { unlockFragment, setAnaDialogue } = useGame();
+  const { unlockFragment, setAnaDialogue, setAnaVisible } = useGame();
   const [nodes, setNodes] = useState(NODES);
   const [selectedNode, setSelectedNode] = useState(null);
   const [puzzleInput, setPuzzleInput] = useState("");
   const [isShake, setIsShake] = useState(false);
   const [timeLeft, setTimeLeft] = useState(30 * 60);
+  const [timerActive, setTimerActive] = useState(false);
+  const [introOpen, setIntroOpen] = useState(true);
+  const [introStep, setIntroStep] = useState(0);
 
   useEffect(() => {
-    setAnaDialogue("Firewall detected. Nodes are encrypted. Breach them.");
-  }, [setAnaDialogue]);
+    setAnaVisible(false);
+    setAnaDialogue(INTRO_MESSAGES[0]);
+  }, [setAnaDialogue, setAnaVisible]);
 
   useEffect(() => {
+    if (!timerActive) return;
     const interval = setInterval(() => {
       setTimeLeft(prev => (prev > 0 ? prev - 1 : 0));
     }, 1000);
     return () => clearInterval(interval);
-  }, []);
+  }, [timerActive]);
 
   const TOTAL_TIME = 30 * 60;
   const r = 9;
@@ -66,10 +79,10 @@ const Round1 = () => {
   };
 
   return (
-    <div className="flex-1 pt-12 md:pt-16 px-6 md:px-12 flex flex-col md:flex-row gap-8">
+    <div className="flex-1 pt-12 md:pt-16 px-6 md:px-12 flex flex-col md:flex-row gap-8 overflow-hidden">
       
-      <div className="flex-1 max-h-[92vh] overflow-auto pr-2 mb-6">
-        <div className="grid grid-cols-5 grid-rows-10 gap-3 md:gap-4">
+      <div className="flex-1 max-h-[88vh] overflow-y-auto overflow-x-hidden no-scrollbar pr-2 mb-4">
+        <div className="grid grid-cols-5 grid-rows-9 gap-2 md:gap-3">
           {nodes.map((node) => (
             <Motion.button
               key={node.id}
@@ -89,11 +102,11 @@ const Round1 = () => {
         </div>
       </div>
 
-      <div className="w-full md:w-80 relative">
+      <div className="w-full md:w-80 relative max-h-[88vh] overflow-y-auto overflow-x-hidden no-scrollbar">
         <Motion.div 
           initial={{ opacity: 0, y: -6 }}
           animate={{ opacity: 1, y: 0 }}
-          className="absolute -top-12 right-0 z-30 pointer-events-none w-fit"
+          className="sticky top-0 z-30 pointer-events-none w-fit ml-auto"
         >
           <Motion.div
             animate={{ scale: [1, 1.03, 1] }}
@@ -147,7 +160,8 @@ const Round1 = () => {
       <Modal 
         isOpen={!!selectedNode} 
         onClose={() => setSelectedNode(null)} 
-        title={`DECRYPT NODE ${selectedNode?.id}`}
+        title={`DECRYPT NODE ${(selectedNode?.id ?? 0) + 1}`}
+        showClose={false}
       >
         <Motion.div 
           animate={isShake ? { x: [-10, 10, -10, 10, 0] } : {}}
@@ -175,6 +189,39 @@ const Round1 = () => {
             </NeonButton>
           </div>
         </Motion.div>
+      </Modal>
+
+      <Modal 
+        isOpen={introOpen}
+        onClose={() => {}}
+        title="ANA // SYSTEM AI"
+        showClose={false}
+      >
+        <div className="space-y-6">
+          <div className="p-4 border border-neon-cyan/30 bg-black/50 font-mono text-neon-cyan">
+            {INTRO_MESSAGES[introStep]}
+          </div>
+          <div className="flex justify-end gap-3">
+            {introStep < INTRO_MESSAGES.length - 1 ? (
+              <NeonButton variant="secondary" onClick={() => {
+                const next = introStep + 1;
+                setIntroStep(next);
+                setAnaDialogue(INTRO_MESSAGES[next]);
+              }}>
+                NEXT &gt;&gt;
+              </NeonButton>
+            ) : (
+              <NeonButton onClick={() => {
+                setIntroOpen(false);
+                setTimerActive(true);
+                setAnaVisible(true);
+                setAnaDialogue("Mission start. Breach the grid.");
+              }}>
+                START
+              </NeonButton>
+            )}
+          </div>
+        </div>
       </Modal>
     </div>
   );
