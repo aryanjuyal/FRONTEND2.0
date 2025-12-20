@@ -12,6 +12,7 @@ export const GameProvider = ({ children }) => {
     fragments: [],
     securityLevel: 'HIGH',
     completedRounds: [],
+    seenIntro: false,
   });
 
   const [anaDialogue, setAnaDialogue] = useState("System initialized. Waiting for input...");
@@ -30,6 +31,10 @@ export const GameProvider = ({ children }) => {
   const login = (teamId) => {
     setGameState(prev => ({ ...prev, teamId }));
     setAnaDialogue(`Welcome back, Team ${teamId}. Accessing dashboard...`);
+  };
+
+  const markIntroSeen = () => {
+    setGameState(prev => ({ ...prev, seenIntro: true }));
   };
 
   const addPoints = (amount) => {
@@ -55,6 +60,7 @@ export const GameProvider = ({ children }) => {
       addPoints, 
       unlockFragment,
       completeRound,
+      markIntroSeen,
       anaDialogue,
       setAnaDialogue,
       anaVisible,

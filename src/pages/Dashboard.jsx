@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Shield, ShoppingBag, Database, Activity, Lock } from 'lucide-react';
+import { Shield, ShoppingBag, Database, Activity, Lock, Check } from 'lucide-react';
 import TerminalCard from '../components/TerminalCard';
 import NeonButton from '../components/NeonButton';
 import GlitchText from '../components/GlitchText';
@@ -17,7 +17,7 @@ const DASHBOARD_INTRO = [
 
 const Dashboard = () => {
   const navigate = useNavigate();
-  const { gameState, setAnaDialogue, setAnaVisible } = useGame();
+  const { gameState, setAnaDialogue, setAnaVisible, markIntroSeen } = useGame();
   const pointsMV = useMotionValue(0);
   const tokensMV = useMotionValue(0);
   const [pointsDisplay, setPointsDisplay] = useState(0);
@@ -28,13 +28,19 @@ const Dashboard = () => {
   const isRound2Locked = !gameState.completedRounds.includes('round1');
   const isRound3Locked = !gameState.completedRounds.includes('round2');
 
+  const isRound1Complete = gameState.completedRounds.includes('round1');
+  const isRound2Complete = gameState.completedRounds.includes('round2');
+  const isRound3Complete = gameState.completedRounds.includes('round3');
+
   useEffect(() => {
-    if (gameState.completedRounds.length === 0 && gameState.fragments.length === 0) {
+    if (!gameState.seenIntro) {
       setIntroOpen(true);
+      setAnaDialogue(DASHBOARD_INTRO[0]);
+    } else {
+      setIntroOpen(false);
     }
     setAnaVisible(false);
-    setAnaDialogue(DASHBOARD_INTRO[0]);
-  }, [setAnaDialogue, setAnaVisible, gameState.completedRounds.length, gameState.fragments.length]);
+  }, [setAnaDialogue, setAnaVisible, gameState.seenIntro]);
 
   useEffect(() => {
     const stopPoints = animate(pointsMV, gameState.points ?? 0, { duration: 0.6, ease: 'easeOut' });
@@ -130,7 +136,15 @@ const Dashboard = () => {
               className="w-full flex items-center justify-between group"
               onClick={() => navigate('/round1')}
             >
-              <span>ROUND 1: FIREWALL</span>
+              <div className="flex flex-col items-start">
+                <span>ROUND 1: FIREWALL</span>
+                {isRound1Complete && (
+                  <div className="flex items-center gap-1 text-neon-green text-xs mt-1">
+                    <Check size={12} />
+                    <span>COMPLETED</span>
+                  </div>
+                )}
+              </div>
               <Shield className="group-hover:text-white transition-colors" size={20} />
             </NeonButton>
           </Motion.div>
@@ -144,6 +158,12 @@ const Dashboard = () => {
               <div className="flex flex-col items-start">
                 <span>ROUND 2: MARKETPLACE</span>
                 {isRound2Locked && <Lock size={16} className="mt-1" />}
+                {isRound2Complete && (
+                  <div className="flex items-center gap-1 text-neon-green text-xs mt-1">
+                    <Check size={12} />
+                    <span>COMPLETED</span>
+                  </div>
+                )}
               </div>
               {!isRound2Locked && <ShoppingBag className="group-hover:text-white transition-colors" size={20} />}
             </NeonButton>
@@ -158,6 +178,12 @@ const Dashboard = () => {
               <div className="flex flex-col items-start">
                 <span>ROUND 3: ANOMALY</span>
                 {isRound3Locked && <Lock size={16} className="mt-1" />}
+                {isRound3Complete && (
+                  <div className="flex items-center gap-1 text-neon-green text-xs mt-1">
+                    <Check size={12} />
+                    <span>COMPLETED</span>
+                  </div>
+                )}
               </div>
               {!isRound3Locked && <Activity className="group-hover:text-white transition-colors" size={20} />}
             </NeonButton>
@@ -223,8 +249,8 @@ const Dashboard = () => {
             ) : (
               <NeonButton onClick={() => {
                 setIntroOpen(false);
-                setAnaVisible(true);
-                setAnaDialogue("Dashboard accessed. Choose your mission protocol.");
+                markIntroSeen();
+                setAnaVisible(false);
               }}>
                 CONTINUE
               </NeonButton>

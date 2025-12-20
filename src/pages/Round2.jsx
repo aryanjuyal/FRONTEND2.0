@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import TerminalCard from '../components/TerminalCard';
 import NeonButton from '../components/NeonButton';
 import { useGame } from '../context/GameContext';
+import GlitchText from '../components/GlitchText';
 
 const Round2 = () => {
   const navigate = useNavigate();
@@ -20,7 +21,7 @@ const Round2 = () => {
   return (
     <div className="flex-1 p-6 md:p-12 space-y-8">
       <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-orbitron text-neon-gold">MARKETPLACE & QUIZ</h2>
+        <GlitchText text="MARKETPLACE & QUIZ" as="h2" size="large" />
         <NeonButton variant="secondary" onClick={handleReturn}>
             RETURN
         </NeonButton>

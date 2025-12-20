@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Lock, Unlock, AlertTriangle, Clock } from 'lucide-react';
-import { motion as Motion } from 'framer-motion';
+import { Lock, Unlock, AlertTriangle, Clock, CheckCircle } from 'lucide-react';
+import { motion as Motion, AnimatePresence } from 'framer-motion';
 import TerminalCard from '../components/TerminalCard';
 import NeonButton from '../components/NeonButton';
 import Modal from '../components/Modal';
@@ -33,8 +33,9 @@ const Round1 = () => {
   const [selectedNode, setSelectedNode] = useState(null);
   const [puzzleInput, setPuzzleInput] = useState("");
   const [isShake, setIsShake] = useState(false);
-  const [timeLeft, setTimeLeft] = useState(30 * 60);
+  const [timeLeft, setTimeLeft] = useState(60);
   const [timerActive, setTimerActive] = useState(false);
+  const [showCompletionPopup, setShowCompletionPopup] = useState(false);
   const [introOpen, setIntroOpen] = useState(true);
   const [introStep, setIntroStep] = useState(0);
 
@@ -51,7 +52,14 @@ const Round1 = () => {
     return () => clearInterval(interval);
   }, [timerActive]);
 
-  const TOTAL_TIME = 30 * 60;
+  useEffect(() => {
+    if (timeLeft === 0 && timerActive) {
+      setTimerActive(false);
+      setShowCompletionPopup(true);
+    }
+  }, [timeLeft, timerActive]);
+
+  const TOTAL_TIME = 60;
   const r = 9;
   const C = 2 * Math.PI * r;
   const dashOffset = C * (1 - timeLeft / TOTAL_TIME);
@@ -168,16 +176,6 @@ const Round1 = () => {
               <li>Solve decryption cipher</li>
               <li>Inject payload</li>
             </ul>
-            
-            <div className="pt-4 border-t border-red-900/50">
-              <NeonButton 
-                className="w-full" 
-                variant={unlockedCount > 0 ? "primary" : "secondary"} 
-                onClick={handleReturn}
-              >
-                {unlockedCount > 0 ? "COMPLETE MISSION" : "ABORT MISSION"}
-              </NeonButton>
-            </div>
           </div>
         </TerminalCard>
       </div>
@@ -252,6 +250,61 @@ const Round1 = () => {
           </div>
         </div>
       </Modal>
+
+      <AnimatePresence>
+        {showCompletionPopup && (
+          <Motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm"
+          >
+            <Motion.div
+              initial={{ scale: 0.9, y: 20 }}
+              animate={{ scale: 1, y: 0 }}
+              exit={{ scale: 0.9, y: 20 }}
+              transition={{ type: "spring", duration: 0.5 }}
+              className="bg-gray-900 border border-neon-green/50 rounded-2xl p-8 max-w-md w-full mx-4 shadow-[0_0_30px_rgba(16,255,120,0.2)] text-center relative overflow-hidden"
+            >
+              <div className="absolute inset-0 bg-neon-green/5 pointer-events-none" />
+              <div className="relative z-10 flex flex-col items-center gap-6">
+                <Motion.div
+                  initial={{ scale: 0, rotate: -180 }}
+                  animate={{ scale: 1, rotate: 0 }}
+                  transition={{ delay: 0.2, type: "spring" }}
+                >
+                  <CheckCircle size={64} className="text-neon-green drop-shadow-[0_0_10px_rgba(16,255,120,0.5)]" />
+                </Motion.div>
+                
+                <div className="space-y-2">
+                  <h2 className="text-2xl font-bold text-white font-orbitron tracking-wide">
+                    Round 1 Complete
+                  </h2>
+                  <p className="text-neon-green font-mono text-lg">
+                    Congratulations!
+                  </p>
+                </div>
+
+                <div className="w-full bg-black/40 rounded-lg p-4 border border-neon-green/20">
+                  <p className="text-gray-400 font-mono text-sm mb-1">CURRENT PROGRESS</p>
+                  <div className="flex items-center justify-center gap-2 text-xl font-bold text-white">
+                    <Unlock size={20} className="text-neon-green" />
+                    <span>Total Unlocked Nodes: <span className="text-neon-green">{unlockedCount}</span></span>
+                  </div>
+                </div>
+
+                <NeonButton 
+                  onClick={handleReturn}
+                  className="w-full"
+                  variant="primary"
+                >
+                  RETURN TO DASHBOARD
+                </NeonButton>
+              </div>
+            </Motion.div>
+          </Motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };
