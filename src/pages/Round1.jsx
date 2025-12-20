@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
- 
+import { useNavigate } from 'react-router-dom';
 import { Lock, Unlock, AlertTriangle, Clock } from 'lucide-react';
 import { motion as Motion } from 'framer-motion';
 import TerminalCard from '../components/TerminalCard';
@@ -27,8 +27,8 @@ const INTRO_MESSAGES = [
 ];
 
 const Round1 = () => {
-  
-  const { unlockFragment, setAnaDialogue, setAnaVisible } = useGame();
+  const navigate = useNavigate();
+  const { unlockFragment, setAnaDialogue, setAnaVisible, completeRound } = useGame();
   const [nodes, setNodes] = useState(NODES);
   const [selectedNode, setSelectedNode] = useState(null);
   const [puzzleInput, setPuzzleInput] = useState("");
@@ -60,6 +60,13 @@ const Round1 = () => {
   const totalTimeLabel = `${String(Math.floor(TOTAL_TIME / 60)).padStart(2, '0')}:${String(TOTAL_TIME % 60).padStart(2, '0')}`;
   const totalNodes = NODES.length;
   const unlockedCount = nodes.filter(n => n.status === 'unlocked').length;
+
+  const handleReturn = () => {
+    if (unlockedCount > 0) {
+      completeRound('round1');
+    }
+    navigate('/dashboard');
+  };
 
   const handleNodeClick = (node) => {
     if (node.status === 'locked') {
@@ -113,11 +120,11 @@ const Round1 = () => {
           animate={{ opacity: 1, y: 0 }}
           className="sticky top-0 z-30 pointer-events-none w-fit ml-auto"
         >
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-3">
             <Motion.div
-              animate={{ scale: [1, 1.03, 1] }}
-              transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
-              className="px-3 py-2 rounded border border-neon-cyan/40 bg-bg-black/60 backdrop-blur-sm shadow-none flex items-center gap-2 opacity-90"
+              animate={{ scale: [1, 1.02, 1] }}
+              transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
+              className="px-4 py-2 rounded-lg border-2 border-neon-cyan/50 bg-bg-black/60 backdrop-blur-sm shadow-[0_0_12px_rgba(0,246,255,0.25)] flex items-center justify-center gap-3 opacity-90"
             >
               <div className="relative w-6 h-6 flex items-center justify-center">
                 <svg viewBox="0 0 24 24" className="absolute inset-0">
@@ -137,16 +144,15 @@ const Round1 = () => {
                 </svg>
                 <Clock size={12} className="text-neon-cyan opacity-60" />
               </div>
-              <div className={`text-base md:text-lg font-mono ${isDanger ? 'text-red-500' : 'text-neon-cyan'} ${isCritical ? 'animate-pulse' : ''}`}>
+              <div className={`text-base md:text-lg font-mono font-semibold ${isDanger ? 'text-red-500' : 'text-neon-cyan/80'} ${isCritical ? 'animate-pulse' : ''}`}>
                 {String(Math.floor(timeLeft / 60)).padStart(2, '0')}:{String(timeLeft % 60).padStart(2, '0')}
               </div>
             </Motion.div>
             <Motion.div
-              initial={{ opacity: 0, x: 10 }}
-              animate={{ opacity: 1, x: 0 }}
-              className="px-3 py-2 rounded border border-neon-cyan/40 bg-bg-black/60 backdrop-blur-sm shadow-none font-mono text-neon-green text-sm md:text-base"
+              className="px-4 py-2 rounded-lg border-2 border-neon-green/60 bg-bg-black/60 backdrop-blur-sm shadow-[0_0_12px_rgba(16,255,120,0.35)] font-mono font-semibold text-neon-green text-sm md:text-base flex items-center justify-center gap-3"
             >
-              UNLOCKED {unlockedCount}/{totalNodes}
+              <Unlock size={12} className="text-neon-green" />
+              <span>UNLOCKED {unlockedCount}/{totalNodes}</span>
             </Motion.div>
           </div>
         </Motion.div>
@@ -163,6 +169,15 @@ const Round1 = () => {
               <li>Inject payload</li>
             </ul>
             
+            <div className="pt-4 border-t border-red-900/50">
+              <NeonButton 
+                className="w-full" 
+                variant={unlockedCount > 0 ? "primary" : "secondary"} 
+                onClick={handleReturn}
+              >
+                {unlockedCount > 0 ? "COMPLETE MISSION" : "ABORT MISSION"}
+              </NeonButton>
+            </div>
           </div>
         </TerminalCard>
       </div>

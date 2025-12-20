@@ -11,10 +11,21 @@ export const GameProvider = ({ children }) => {
     tokens: 0,
     fragments: [],
     securityLevel: 'HIGH',
+    completedRounds: [],
   });
 
   const [anaDialogue, setAnaDialogue] = useState("System initialized. Waiting for input...");
-  const [anaVisible, setAnaVisible] = useState(true);
+  const [anaVisible, setAnaVisible] = useState(false);
+
+  const completeRound = (roundId) => {
+    setGameState(prev => {
+      if (prev.completedRounds.includes(roundId)) return prev;
+      return {
+        ...prev,
+        completedRounds: [...prev.completedRounds, roundId]
+      };
+    });
+  };
 
   const login = (teamId) => {
     setGameState(prev => ({ ...prev, teamId }));
@@ -43,6 +54,7 @@ export const GameProvider = ({ children }) => {
       login, 
       addPoints, 
       unlockFragment,
+      completeRound,
       anaDialogue,
       setAnaDialogue,
       anaVisible,

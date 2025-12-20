@@ -1,24 +1,40 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Shield, ShoppingBag, Database, Activity } from 'lucide-react';
+import { Shield, ShoppingBag, Database, Activity, Lock } from 'lucide-react';
 import TerminalCard from '../components/TerminalCard';
 import NeonButton from '../components/NeonButton';
 import GlitchText from '../components/GlitchText';
 import { useGame } from '../context/GameContext';
 import { motion as Motion, animate, useMotionValue } from 'framer-motion';
 import MeteorShower from '../components/MeteorShower';
+import Modal from '../components/Modal';
+
+const DASHBOARD_INTRO = [
+  "Welcome to BlockVerse. I'm ANA, your system AI.",
+  "Story: A fractured network hides critical data fragments.",
+  "Rounds: FIREWALL, MARKETPLACE, ANOMALY. Navigate, solve, progress."
+];
 
 const Dashboard = () => {
   const navigate = useNavigate();
-  const { gameState, setAnaDialogue } = useGame();
+  const { gameState, setAnaDialogue, setAnaVisible } = useGame();
   const pointsMV = useMotionValue(0);
   const tokensMV = useMotionValue(0);
   const [pointsDisplay, setPointsDisplay] = useState(0);
   const [tokensDisplay, setTokensDisplay] = useState(0);
+  const [introOpen, setIntroOpen] = useState(false);
+  const [introStep, setIntroStep] = useState(0);
+
+  const isRound2Locked = !gameState.completedRounds.includes('round1');
+  const isRound3Locked = !gameState.completedRounds.includes('round2');
 
   useEffect(() => {
-    setAnaDialogue("Dashboard accessed. Choose your mission protocol.");
-  }, [setAnaDialogue]);
+    if (gameState.completedRounds.length === 0 && gameState.fragments.length === 0) {
+      setIntroOpen(true);
+    }
+    setAnaVisible(false);
+    setAnaDialogue(DASHBOARD_INTRO[0]);
+  }, [setAnaDialogue, setAnaVisible, gameState.completedRounds.length, gameState.fragments.length]);
 
   useEffect(() => {
     const stopPoints = animate(pointsMV, gameState.points ?? 0, { duration: 0.6, ease: 'easeOut' });
@@ -47,13 +63,14 @@ const Dashboard = () => {
   };
 
   return (
-    <Motion.div 
-      variants={containerVariants}
-      initial="hidden"
-      animate="visible"
-      className="flex-1 p-6 md:p-12 space-y-8"
-    >
+    <>
       <MeteorShower />
+      <Motion.div 
+        variants={containerVariants}
+        initial="hidden"
+        animate="visible"
+        className="flex-1 p-6 md:p-12 space-y-8"
+      >
       <Motion.div variants={itemVariants} className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
           <h2 className="text-gray-400 font-mono text-sm">CURRENT SESSION</h2>
@@ -120,23 +137,29 @@ const Dashboard = () => {
           
           <Motion.div variants={itemVariants}>
             <NeonButton 
-              className="w-full flex items-center justify-between group"
+              className={`w-full flex items-center justify-between group ${isRound2Locked ? 'opacity-50 cursor-not-allowed' : ''}`}
               variant="secondary"
-              onClick={() => navigate('/round2')}
+              onClick={() => !isRound2Locked && navigate('/round2')}
             >
-              <span>ROUND 2: MARKETPLACE</span>
-              <ShoppingBag className="group-hover:text-white transition-colors" size={20} />
+              <div className="flex flex-col items-start">
+                <span>ROUND 2: MARKETPLACE</span>
+                {isRound2Locked && <Lock size={16} className="mt-1" />}
+              </div>
+              {!isRound2Locked && <ShoppingBag className="group-hover:text-white transition-colors" size={20} />}
             </NeonButton>
           </Motion.div>
 
           <Motion.div variants={itemVariants}>
             <NeonButton 
-              className="w-full flex items-center justify-between group"
+              className={`w-full flex items-center justify-between group ${isRound3Locked ? 'opacity-50 cursor-not-allowed' : ''}`}
               variant="danger"
-              onClick={() => navigate('/round3')}
+              onClick={() => !isRound3Locked && navigate('/round3')}
             >
-              <span>ROUND 3: ANOMALY</span>
-              <Activity className="group-hover:text-white transition-colors" size={20} />
+              <div className="flex flex-col items-start">
+                <span>ROUND 3: ANOMALY</span>
+                {isRound3Locked && <Lock size={16} className="mt-1" />}
+              </div>
+              {!isRound3Locked && <Activity className="group-hover:text-white transition-colors" size={20} />}
             </NeonButton>
           </Motion.div>
         </Motion.div>
@@ -177,7 +200,39 @@ const Dashboard = () => {
           </Motion.div>
         </Motion.div>
       </div>
-    </Motion.div>
+      </Motion.div>
+      <Modal 
+        isOpen={introOpen}
+        onClose={() => {}}
+        title="ANA // SYSTEM AI"
+        showClose={false}
+      >
+        <div className="space-y-6">
+          <div className="p-4 border border-neon-cyan/30 bg-black/50 font-mono text-neon-cyan">
+            {DASHBOARD_INTRO[introStep]}
+          </div>
+          <div className="flex justify-end gap-3">
+            {introStep < DASHBOARD_INTRO.length - 1 ? (
+              <NeonButton variant="secondary" onClick={() => {
+                const next = introStep + 1;
+                setIntroStep(next);
+                setAnaDialogue(DASHBOARD_INTRO[next]);
+              }}>
+                NEXT &gt;&gt;
+              </NeonButton>
+            ) : (
+              <NeonButton onClick={() => {
+                setIntroOpen(false);
+                setAnaVisible(true);
+                setAnaDialogue("Dashboard accessed. Choose your mission protocol.");
+              }}>
+                CONTINUE
+              </NeonButton>
+            )}
+          </div>
+        </div>
+      </Modal>
+    </>
   );
 };
 

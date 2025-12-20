@@ -6,17 +6,22 @@ import { useGame } from '../context/GameContext';
 
 const Round2 = () => {
   const navigate = useNavigate();
-  const { setAnaDialogue } = useGame();
+  const { setAnaDialogue, completeRound } = useGame();
 
   useEffect(() => {
     setAnaDialogue("Entering Marketplace. tread carefully. Dark web signatures detected.");
   }, [setAnaDialogue]);
 
+  const handleReturn = () => {
+    completeRound('round2');
+    navigate('/dashboard');
+  };
+
   return (
     <div className="flex-1 p-6 md:p-12 space-y-8">
       <div className="flex justify-between items-center">
         <h2 className="text-2xl font-orbitron text-neon-gold">MARKETPLACE & QUIZ</h2>
-        <NeonButton variant="secondary" onClick={() => navigate('/dashboard')}>
+        <NeonButton variant="secondary" onClick={handleReturn}>
             RETURN
         </NeonButton>
       </div>
