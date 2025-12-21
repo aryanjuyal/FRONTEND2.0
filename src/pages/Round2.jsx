@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ShoppingBag, CheckCircle, Coins, ArrowLeft, ChevronRight, Activity } from 'lucide-react';
+import { ShoppingBag, CheckCircle, Coins, ArrowLeft, ChevronRight, Activity, Clock } from 'lucide-react';
 import TerminalCard from '../components/TerminalCard';
 import NeonButton from '../components/NeonButton';
 import { useGame } from '../context/GameContext';
@@ -54,6 +54,21 @@ const Round2 = () => {
   
   const [introOpen, setIntroOpen] = useState(true);
   const [introStep, setIntroStep] = useState(0);
+  const [timer, setTimer] = useState(60);
+  const [waitingForTimer, setWaitingForTimer] = useState(false);
+
+  useEffect(() => {
+    if (introOpen || marketOpen) return;
+    
+    if (timer > 0) {
+      const interval = setInterval(() => {
+        setTimer((prev) => prev - 1);
+      }, 1000);
+      return () => clearInterval(interval);
+    } else {
+      setMarketOpen(true);
+    }
+  }, [timer, introOpen, marketOpen]);
 
   useEffect(() => {
     setAnaVisible(false);
@@ -96,7 +111,7 @@ const Round2 = () => {
       setSelectedOption(null);
       setIsCorrect(null);
     } else {
-      setMarketOpen(true);
+      setWaitingForTimer(true);
     }
   };
 
@@ -106,7 +121,7 @@ const Round2 = () => {
     <div className="min-h-screen flex flex-col relative overflow-hidden bg-black font-sans">
       <div className="absolute inset-0 pointer-events-none">
         <div className="absolute inset-0 bg-[linear-gradient(rgba(0,255,255,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(0,255,255,0.03)_1px,transparent_1px)] bg-[size:40px_40px] opacity-30" />
-        <div className="absolute inset-0 bg-radial-gradient from-transparent via-black/60 to-black opacity-80" /> {/* Vignette */}
+        <div className="absolute inset-0 bg-radial-gradient from-transparent via-black/60 to-black opacity-80" />
       </div>
 
       <div className="relative z-20 flex justify-between items-center p-6 md:px-12 md:py-8">
@@ -114,15 +129,10 @@ const Round2 = () => {
         <GlitchText text="QUIZ" as="h2" size="medium" className="md:hidden" />
         
         <div className="flex items-center gap-4">
-          <motion.button
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            onClick={handleReturn}
-            className="flex items-center gap-2 px-4 py-2 border border-neon-cyan/50 bg-black/40 text-neon-cyan font-orbitron text-sm hover:bg-neon-cyan/10 hover:border-neon-cyan transition-all rounded-sm"
-          >
-            <ArrowLeft size={16} />
-            <span>RETURN</span>
-          </motion.button>
+          <div className={`flex items-center gap-2 px-4 py-2 border bg-black/40 font-orbitron text-xl transition-all rounded-sm ${timer <= 10 ? 'border-red-500 text-red-500 animate-pulse' : 'border-neon-cyan/50 text-neon-cyan'}`}>
+            <Clock size={20} />
+            <span>{Math.floor(timer / 60).toString().padStart(2, '0')}:{ (timer % 60).toString().padStart(2, '0') }</span>
+          </div>
           
           <motion.button
             whileHover={{ scale: 1.05 }}
@@ -140,13 +150,39 @@ const Round2 = () => {
         
         <AnimatePresence mode="wait">
           <motion.div
-            key={idx}
+            key={waitingForTimer ? 'waiting' : idx}
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
             transition={{ duration: 0.3 }}
             className="w-full"
           >
+            {waitingForTimer ? (
+              <TerminalCard title="SYSTEM SYNCHRONIZATION" className="w-full relative overflow-hidden backdrop-blur-xl bg-black/60 border-neon-cyan/30 shadow-[0_0_30px_rgba(0,255,255,0.1)]">
+                <div className="flex flex-col items-center justify-center min-h-[400px] gap-8">
+                  <div className="relative">
+                    <motion.div 
+                      animate={{ rotate: 360 }}
+                      transition={{ duration: 4, repeat: Infinity, ease: "linear" }}
+                      className="w-32 h-32 rounded-full border-4 border-neon-cyan/30 border-t-neon-cyan"
+                    />
+                    <motion.div 
+                      animate={{ rotate: -360 }}
+                      transition={{ duration: 6, repeat: Infinity, ease: "linear" }}
+                      className="absolute inset-2 rounded-full border-4 border-neon-green/30 border-b-neon-green"
+                    />
+                    <div className="absolute inset-0 flex items-center justify-center font-orbitron text-2xl text-white">
+                       {Math.floor(timer / 60).toString().padStart(2, '0')}:{ (timer % 60).toString().padStart(2, '0') }
+                    </div>
+                  </div>
+                  
+                  <div className="text-center space-y-4">
+                    <h2 className="text-2xl font-orbitron text-white tracking-widest animate-pulse">AWAITING SYSTEM SYNC</h2>
+                    <p className="font-mono text-neon-cyan">All queries resolved. Stand by for protocol completion.</p>
+                  </div>
+                </div>
+              </TerminalCard>
+            ) : (
             <TerminalCard title="TECH KNOWLEDGE BASE" className="w-full relative overflow-hidden backdrop-blur-xl bg-black/60 border-neon-cyan/30 shadow-[0_0_30px_rgba(0,255,255,0.1)]">
               
               <div className="flex items-center gap-4 mb-8 font-mono text-sm text-neon-cyan/70">
@@ -233,6 +269,10 @@ const Round2 = () => {
                       <span className="text-neon-green flex items-center gap-2 animate-pulse">
                         <CheckCircle size={14} /> CORRECT ANSWER (+100 PTS)
                       </span> : 
+                      selectedOption === null ?
+                      <span className="text-red-500 flex items-center gap-2 animate-pulse">
+                        <Clock size={14} /> SYSTEM ERROR: TIME EXPIRED
+                      </span> :
                       <span className="text-red-500 flex items-center gap-2 animate-pulse">
                         <Activity size={14} /> SYSTEM ERROR: INCORRECT
                       </span>
@@ -252,6 +292,7 @@ const Round2 = () => {
               </div>
 
             </TerminalCard>
+            )}
           </motion.div>
         </AnimatePresence>
       </div>
@@ -310,8 +351,10 @@ const Round2 = () => {
             </motion.div>
             
             <div className="space-y-4">
-              <h2 className="text-3xl font-orbitron text-white tracking-widest">PROTOCOL COMPLETE</h2>
-              <p className="font-mono text-neon-green text-lg">Knowledge acquisition successful. Database updated.</p>
+              <h2 className="text-3xl font-orbitron text-white tracking-widest">{timer === 0 ? "TIME EXPIRED" : "PROTOCOL COMPLETE"}</h2>
+              <p className="font-mono text-neon-green text-lg">
+                {timer === 0 ? "Session terminated. Data partially acquired." : "Knowledge acquisition successful. Database updated."}
+              </p>
             </div>
             
             <div className="grid grid-cols-2 gap-6 mt-8">
