@@ -101,18 +101,6 @@ const Dashboard = () => {
         ctx.arc(x, y, s.size, 0, Math.PI * 2);
         ctx.fill();
       });
-      ctx.strokeStyle = 'rgba(255,255,255,0.06)';
-      ctx.lineWidth = 1;
-      for (let i = 0; i < 2; i++) {
-        const x1 = (i * 0.4 + (mouseRef.current.x / Math.max(1, canvas.clientWidth)) * 0.08) * w;
-        const y1 = 0;
-        const x2 = x1 + w * 0.5;
-        const y2 = h;
-        ctx.beginPath();
-        ctx.moveTo(x1, y1);
-        ctx.lineTo(x2, y2);
-        ctx.stroke();
-      }
       raf = requestAnimationFrame(loop);
     };
     const onResize = () => resize();
@@ -329,20 +317,20 @@ const Dashboard = () => {
             <canvas ref={canvasRef} className="absolute inset-0 w-full h-full" />
             <div className="absolute inset-0 flex items-center justify-center">
               <div className="relative text-center">
-                <div className="text-3xl md:text-5xl font-bold text-white/15 blur-[0.6px] whitespace-nowrap leading-tight">
-                  ANA is guiding you.
-                </div>
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <span
-                    className="text-3xl md:text-5xl font-bold text-white whitespace-nowrap leading-tight inline-block"
-                    style={{ clipPath: `inset(0 calc(${(1 - reveal) * 100}% - 1px) 0 0)`, willChange: 'clip-path' }}
-                  >
-                    ZERO tried to warn you.
-                  </span>
+                  <div className="text-3xl md:text-5xl font-bold bg-clip-text text-transparent bg-gradient-to-b from-white/20 via-white/10 to-transparent blur-[0.6px] whitespace-nowrap leading-tight">
+                    ANA IS GUIDING YOU
+                  </div>
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <span
+                      className="text-3xl md:text-5xl font-bold text-white whitespace-nowrap leading-tight inline-block"
+                      style={{ clipPath: `inset(0 calc(${(1 - reveal) * 100}% - 1px) 0 0)`, willChange: 'clip-path' }}
+                    >
+                      ZERO TRIED TO WARN YOU
+                    </span>
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
         </Motion.div>
       </div>
       </Motion.div>
