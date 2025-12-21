@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { motion, AnimatePresence } from 'framer-motion';
-import { ShoppingBag, CheckCircle, Coins, ArrowLeft, ChevronRight, Activity, Clock } from 'lucide-react';
+import { motion as Motion, AnimatePresence } from 'framer-motion';
+import { ShoppingBag, CheckCircle, Coins, ChevronRight, Activity, Clock } from 'lucide-react';
 import TerminalCard from '../components/TerminalCard';
 import NeonButton from '../components/NeonButton';
 import { useGame } from '../context/GameContext';
@@ -15,11 +15,19 @@ const INTRO_MESSAGES = [
   "Every correct answer yields 100 Points + 1 Token.",
   "Prepare for data injection. Tap START."
 ];
+const POST_ANA_MESSAGES = [
+  "Briefing: Marketplace access initialized.",
+  "Use your mined tokens to buy clues.",
+  "Clues enhance progression for upcoming sequences.",
+  "Tap MARKET to proceed to the marketplace."
+];
 
 const Round2 = () => {
   const navigate = useNavigate();
-  const { setAnaDialogue, completeRound, addPoints, addTokens, setAnaVisible } = useGame();
+  const { setAnaDialogue, addPoints, addTokens, setAnaVisible } = useGame();
   
+  
+
   const QUESTIONS = [
     { q: "What does HTTP stand for?", options: ["HyperText Transfer Protocol", "High Transfer Text Protocol", "Hyperlink Transmission Process", "Host Transfer Type Protocol"], a: 0 },
     { q: "Which HTML tag defines a hyperlink?", options: ["<link>", "<a>", "<href>", "<url>"], a: 1 },
@@ -56,6 +64,10 @@ const Round2 = () => {
   const [introStep, setIntroStep] = useState(0);
   const [timer, setTimer] = useState(60);
   const [waitingForTimer, setWaitingForTimer] = useState(false);
+  const [roundFinished, setRoundFinished] = useState(false);
+  const [postAnaOpen, setPostAnaOpen] = useState(false);
+  const [postAnaStep, setPostAnaStep] = useState(0);
+  
 
   useEffect(() => {
     if (introOpen || marketOpen) return;
@@ -66,9 +78,14 @@ const Round2 = () => {
       }, 1000);
       return () => clearInterval(interval);
     } else {
-      setMarketOpen(true);
+      if (!roundFinished) {
+        setTimeout(() => {
+          setMarketOpen(true);
+          setRoundFinished(true);
+        }, 0);
+      }
     }
-  }, [timer, introOpen, marketOpen]);
+  }, [timer, introOpen, marketOpen, roundFinished]);
 
   useEffect(() => {
     setAnaVisible(false);
@@ -81,10 +98,7 @@ const Round2 = () => {
     }
   }, [marketOpen, introOpen, setAnaVisible]);
 
-  const handleReturn = () => {
-    completeRound('round2');
-    navigate('/dashboard');
-  };
+  
 
   const handleOptionClick = (i) => {
     if (answered) return;
@@ -134,22 +148,22 @@ const Round2 = () => {
             <span>{Math.floor(timer / 60).toString().padStart(2, '0')}:{ (timer % 60).toString().padStart(2, '0') }</span>
           </div>
           
-          <motion.button
+          <Motion.button
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
-            onClick={() => setMarketOpen(true)}
+            onClick={() => navigate('/market')}
             className="flex items-center gap-2 px-4 py-2 border border-neon-gold/50 bg-black/40 text-neon-gold font-orbitron text-sm hover:bg-neon-gold/10 hover:border-neon-gold transition-all rounded-sm"
           >
             <ShoppingBag size={16} />
             <span>MARKET</span>
-          </motion.button>
+          </Motion.button>
         </div>
       </div>
 
       <div className="flex-1 flex flex-col items-center justify-center p-4 md:p-8 relative z-10 w-full max-w-5xl mx-auto">
         
         <AnimatePresence mode="wait">
-          <motion.div
+          <Motion.div
             key={waitingForTimer ? 'waiting' : idx}
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -161,12 +175,12 @@ const Round2 = () => {
               <TerminalCard title="SYSTEM SYNCHRONIZATION" className="w-full relative overflow-hidden backdrop-blur-xl bg-black/60 border-neon-cyan/30 shadow-[0_0_30px_rgba(0,255,255,0.1)]">
                 <div className="flex flex-col items-center justify-center min-h-[400px] gap-8">
                   <div className="relative">
-                    <motion.div 
+                    <Motion.div 
                       animate={{ rotate: 360 }}
                       transition={{ duration: 4, repeat: Infinity, ease: "linear" }}
                       className="w-32 h-32 rounded-full border-4 border-neon-cyan/30 border-t-neon-cyan"
                     />
-                    <motion.div 
+                    <Motion.div 
                       animate={{ rotate: -360 }}
                       transition={{ duration: 6, repeat: Infinity, ease: "linear" }}
                       className="absolute inset-2 rounded-full border-4 border-neon-green/30 border-b-neon-green"
@@ -177,8 +191,8 @@ const Round2 = () => {
                   </div>
                   
                   <div className="text-center space-y-4">
-                    <h2 className="text-2xl font-orbitron text-white tracking-widest animate-pulse">AWAITING SYSTEM SYNC</h2>
-                    <p className="font-mono text-neon-cyan">All queries resolved. Stand by for protocol completion.</p>
+                    <h2 className="text-2xl font-orbitron text-white tracking-widest animate-pulse">CONGRATULATIONS!</h2>
+                    <p className="font-mono text-neon-cyan">You’re among the early finishers. Final results are being synchronized…</p>
                   </div>
                 </div>
               </TerminalCard>
@@ -188,7 +202,7 @@ const Round2 = () => {
               <div className="flex items-center gap-4 mb-8 font-mono text-sm text-neon-cyan/70">
                 <span className="whitespace-nowrap">Q {idx + 1} <span className="text-gray-500">/</span> {QUESTIONS.length}</span>
                 <div className="flex-1 h-1 bg-gray-800 rounded-full overflow-hidden relative">
-                  <motion.div 
+                  <Motion.div 
                     className="absolute top-0 left-0 h-full bg-neon-cyan shadow-[0_0_10px_rgba(0,255,255,0.8)]"
                     initial={{ width: `${((idx) / QUESTIONS.length) * 100}%` }}
                     animate={{ width: `${progress}%` }}
@@ -230,13 +244,10 @@ const Round2 = () => {
                       textColor = "text-gray-600";
                       glowClass = "opacity-50";
                     }
-                  } else {
-                     if (isSelected) {
-                     }
                   }
 
                   return (
-                    <motion.button
+                    <Motion.button
                       key={i}
                       onClick={() => handleOptionClick(i)}
                       disabled={answered}
@@ -257,7 +268,7 @@ const Round2 = () => {
                       
                       <div className="absolute top-0 left-0 w-2 h-2 border-t-2 border-l-2 border-current opacity-50" />
                       <div className="absolute bottom-0 right-0 w-2 h-2 border-b-2 border-r-2 border-current opacity-50" />
-                    </motion.button>
+                    </Motion.button>
                   );
                 })}
               </div>
@@ -293,7 +304,7 @@ const Round2 = () => {
 
             </TerminalCard>
             )}
-          </motion.div>
+          </Motion.div>
         </AnimatePresence>
       </div>
 
@@ -337,28 +348,28 @@ const Round2 = () => {
         isOpen={marketOpen}
         onClose={() => setMarketOpen(false)}
         title="ANA // SYSTEM AI"
-        showClose={true}
+        showClose={false}
         fullScreen={true}
       >
         <div className="h-[70vh] flex items-center justify-center">
           <div className="max-w-xl w-full mx-auto text-center space-y-8">
-            <motion.div
+            <Motion.div
               initial={{ scale: 0, rotate: -180 }}
               animate={{ scale: 1, rotate: 0 }}
               transition={{ type: "spring", duration: 0.8 }}
             >
               <CheckCircle size={80} className="mx-auto text-neon-green drop-shadow-[0_0_20px_rgba(16,255,120,0.6)]" />
-            </motion.div>
+            </Motion.div>
             
             <div className="space-y-4">
-              <h2 className="text-3xl font-orbitron text-white tracking-widest">{timer === 0 ? "TIME EXPIRED" : "PROTOCOL COMPLETE"}</h2>
+              <h2 className="text-3xl font-orbitron text-white tracking-widest">{timer === 0 ? "Congratulations" : "PROTOCOL COMPLETE"}</h2>
               <p className="font-mono text-neon-green text-lg">
                 {timer === 0 ? "Session terminated. Data partially acquired." : "Knowledge acquisition successful. Database updated."}
               </p>
             </div>
             
             <div className="grid grid-cols-2 gap-6 mt-8">
-              <motion.div 
+              <Motion.div 
                 initial={{ x: -20, opacity: 0 }}
                 animate={{ x: 0, opacity: 1 }}
                 transition={{ delay: 0.2 }}
@@ -369,9 +380,9 @@ const Round2 = () => {
                   <span className="text-gray-400 text-xs font-mono uppercase">Points Acquired</span>
                   <span className="text-3xl font-bold font-orbitron text-neon-green">{sessionPoints}</span>
                 </div>
-              </motion.div>
+              </Motion.div>
               
-              <motion.div 
+              <Motion.div 
                 initial={{ x: 20, opacity: 0 }}
                 animate={{ x: 0, opacity: 1 }}
                 transition={{ delay: 0.3 }}
@@ -382,17 +393,49 @@ const Round2 = () => {
                   <span className="text-gray-400 text-xs font-mono uppercase">Tokens Mined</span>
                   <span className="text-3xl font-bold font-orbitron text-neon-cyan">{sessionTokens}</span>
                 </div>
-              </motion.div>
+              </Motion.div>
             </div>
 
-            <div className="pt-8">
-               <NeonButton onClick={handleReturn} className="w-full max-w-xs mx-auto">
-                 RETURN TO DASHBOARD
-               </NeonButton>
+            <div className="pt-8 flex flex-col gap-6">
+               <div className="flex justify-center">
+                 <NeonButton variant="secondary" onClick={() => { setMarketOpen(false); setPostAnaOpen(true); setPostAnaStep(0); }} className="w-full max-w-xs mx-auto">
+                   CLOSE
+                 </NeonButton>
+               </div>
             </div>
           </div>
         </div>
       </Modal>
+      
+      <Modal 
+        isOpen={postAnaOpen}
+        onClose={() => setPostAnaOpen(false)}
+        title="ANA // SYSTEM AI"
+        showClose={false}
+      >
+        <div className="space-y-6">
+          <div className="p-4 border border-neon-cyan/30 bg-black/50 font-mono text-neon-cyan">
+            {POST_ANA_MESSAGES[postAnaStep]}
+          </div>
+          <div className="flex justify-between items-center font-mono text-neon-cyan text-xs md:text-sm px-1">
+            <span>TOKENS {sessionTokens.toString().padStart(2, '0')}</span>
+            <span>SEQUENCE: MARKETPLACE</span>
+          </div>
+          <div className="flex justify-end gap-3">
+            {postAnaStep < POST_ANA_MESSAGES.length - 1 ? (
+              <NeonButton variant="secondary" onClick={() => setPostAnaStep(s => s + 1)}>
+                NEXT &gt;&gt;
+              </NeonButton>
+            ) : (
+              <NeonButton onClick={() => { setPostAnaOpen(false); navigate('/market'); }}>
+                OPEN MARKET
+              </NeonButton>
+            )}
+          </div>
+        </div>
+      </Modal>
+
+      
     </div>
   );
 };
